@@ -33,12 +33,21 @@ int xtime_test(int vflag)
   return tst1 && tst2 && tst3 && tst4;
 }
 
+int ffMultiply_test(int vflag)
+{
+  unsigned char res = ffMultiply(0x57,0x13);
+  if(vflag)
+    printf("ffMultiply_test: ffMultiply(0x57,0x13)=%x\n", res);
+  return res == 0xfe;
+}
+
 int main(int argc, char** argv)
 {
   int vflag;
   if(argc > 1)
     vflag = strcmp(argv[1],"v")==0;
-  printf("ffAdd_test: %d\n", ffAdd_test(vflag));
-  printf("xtime_test: %d\n", xtime_test(vflag));
+  printf("ffAdd_test: %d\n-------\n", ffAdd_test(vflag));
+  printf("xtime_test: %d\n-------\n", xtime_test(vflag));
+  printf("ffMultiply_test: %d\n-------\n", ffMultiply_test(vflag));
   return 0;
 }
