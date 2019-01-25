@@ -1,8 +1,20 @@
 #include "aes.h"
 #include <stdio.h>
 
-int main(int argc,  char** argv)
+//returns 1 if successful, otherwise 0
+int ffAdd_test()
 {
-  printf("Hello, world, from tests!\n");
+  return ffAdd(0x57,0x83) == 0xd4;
+}
+
+int xtime_test()
+{
+  //TODO
+  return -1;
+}
+
+int main(int argc, char** argv)
+{
+  printf("ffAdd_test: %d\n", ffAdd_test());
   return 0;
 }
