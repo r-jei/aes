@@ -65,6 +65,26 @@ unsigned char ffMultiply(unsigned char a, unsigned char b)
   return result;
 }
 
+word itow(uint32_t i)
+{
+  word new;
+  memset(new.b,0,WLEN);
+  new.b[0] = (i & 0xff000000)>>24;
+  new.b[1] = (i & 0x00ff0000)>>16;
+  new.b[2] = (i & 0x0000ff00)>>8;
+  new.b[3] = i & 0xff;
+  return new;
+}
+
+uint32_t wtoi(word w)
+{
+  uint32_t i = 0x00;
+  for(int it = 0; it < WLEN; it++){
+    i ^= w.b[it]<<(4*(6-(it*2)));
+  }
+  return i;
+}
+
 word set_w(word* w, unsigned char val[WLEN]){
   w->b[0] = val[0];
   w->b[1] = val[1];
@@ -129,19 +149,24 @@ word rcon(int num)
  * @w: The key schedule to be generated. Initial Nb words, and Nr rounds requiring Nb words of key data.
  * @Nk: Thumber of 32-bit words comprising the cipher key
  */
-unsigned char* key_exp(unsigned char key[],
-		       word w[],
+void key_exp(unsigned char key[],
+		       uint32_t w_int[],
 		       int Nk)
 {
-  int Nr = Nk+6;
+  int Nr = Nk+6; // # of rounds
   int words = Nb*(Nr+1);
-  int keybytes = Nk*4;
   word temp;
+  word w[words];
+  for(int i = 0; i < words; i++){
+    memset(w[i].b,0,WLEN);
+  }
   
   int i = 0;
   while(i < Nk){
-    for(int j = 0; j < WLEN; j++)
+    for(int j = 0; j < WLEN; j++){
       w[i].b[j] = key[4*i+j];
+      w_int[i] = wtoi(w[i]);
+    }
     i++;
   }
 
@@ -154,9 +179,10 @@ unsigned char* key_exp(unsigned char key[],
     }else if( Nk > 6 && (i%Nk)==4 ){
       temp = sub_w(temp);
     }
-
-    w[i] = xor_w(w[i-Nk],temp);
-    i++
+    word temp_xor = xor_w(w[i-Nk],temp);
+    w[i] = temp_xor;
+    
+    w_int[i] = wtoi( temp_xor );
+    i++;
   }
-
 }
