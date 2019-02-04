@@ -1,5 +1,3 @@
-# Makefile for AES implementation
-
 CC = cc
 CFLAGS = -Wall -g
 
@@ -17,4 +15,4 @@ tests.o:
 
 #clean main directory
 clean:
-	rm *~ *.o
+	rm *~ *.o tests main
