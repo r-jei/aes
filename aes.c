@@ -44,9 +44,9 @@ unsigned char ffMultiply(unsigned char a, unsigned char b)
     left = left>>1;
   }
 
-  // Break b into the sum of its constituent 8 bits and then distribute.
-  // a * ( b7 ^ b6 ^ ... ^ b0) = (a*b7) ^ (a*b6) ^ ... ^ (a*b0)
-  // You need only store the terms with non-zero bits: a*0 = 0 (no effect)
+  /* Break b into the sum of its constituent 8 bits and then distribute.
+   a * ( b7 ^ b6 ^ ... ^ b0) = (a*b7) ^ (a*b6) ^ ... ^ (a*b0) 
+   You need only store the terms with non-zero bits: a*0 = 0 (no effect) */
   unsigned char xt_arr[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   unsigned char prev_xt = a;
   int arr_end = 0;
@@ -111,8 +111,8 @@ word sub_w(word w)
 
   for(int i = 0; i < WLEN; i++){
     temp = w.b[i];
-    int col = (int) (0x0f & temp);
-    int row = (int) (0xf0 & temp)>>4;
+    int col = (uint32_t) (0x0f & temp);
+    int row = (uint32_t) (0xf0 & temp)>>4;
     new.b[i] = Sbox[row][col];
   }
   
@@ -150,7 +150,7 @@ word rcon(int num)
  * @Nk: Thumber of 32-bit words comprising the cipher key
  */
 void key_exp(unsigned char key[],
-		       uint32_t w_int[],
+		       uint32_t warr[],
 		       int Nk)
 {
   int Nr = Nk+6; // # of rounds
@@ -165,7 +165,7 @@ void key_exp(unsigned char key[],
   while(i < Nk){
     for(int j = 0; j < WLEN; j++){
       w[i].b[j] = key[4*i+j];
-      w_int[i] = wtoi(w[i]);
+      warr[i] = wtoi(w[i]);
     }
     i++;
   }
@@ -182,7 +182,88 @@ void key_exp(unsigned char key[],
     word temp_xor = xor_w(w[i-Nk],temp);
     w[i] = temp_xor;
     
-    w_int[i] = wtoi( temp_xor );
+    warr[i] = wtoi( temp_xor );
     i++;
+  }
+}
+
+void add_key(word state[Nb], uint32_t warr[], int round)
+{
+  int i;
+  for(i = round*Nb; i < round*(Nb+1); i++){
+    state[i] = xor_w(state[i], itow(warr[round*Nb+i]));
+  }
+}
+
+void sub_bytes(word state[Nb])
+{
+  state[0] = sub_w(state[0]);
+  state[1] = sub_w(state[1]);
+  state[2] = sub_w(state[2]);
+  state[3] = sub_w(state[3]);
+}
+
+void shift_rows(word state[Nb])
+{
+  int i, r, c;
+  unsigned char temp[Nb];
+  memset(temp, 0x00, Nb);
+  /* row 0 isn't shifted */
+  for(r = 1; r < WLEN; r++){
+    for(i = 0; i < Nb; i++)
+      temp[i] = state[r].b[i];
+    
+    for(c = 0; c < Nb; c++){
+      state[r].b[c] = temp[(c+r)%Nb];
+    }
+  }
+}
+
+void mix_cols(word state[Nb])
+{
+  int r, c;
+  unsigned char s0c, s1c, s2c, s3c;
+  for(c = 0; c < Nb; c++){
+    s0c = state[0].b[c];
+    s1c = state[1].b[c];
+    s2c = state[2].b[c];
+    s3c = state[3].b[c];
+
+    state[0].b[c] = ffMultiply(0x02,s0c) ^ ffMultiply(0x03,s1c) ^ s2c ^ s3c;
+    state[1].b[c] = s0c ^ ffMultiply(0x02,s1c) ^ ffMultiply(0x03,s2c) ^ s3c;
+    state[2].b[c] = s0c ^ s1c ^ ffMultiply(0x02,s2c) ^ ffMultiply(0x03,s3c);
+    state[3].b[c] = ffMultiply(0x03,s0c) ^ s1c ^ s2c ^ ffMultiply(0x02,s3c);
+  }
+}
+
+void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[])
+{
+  int r, c, round, nr;
+  word state[Nb];
+  /* initialize the state matrix */
+  for(c = 0; c < 4; c++){
+    for(r = 0; r < Nb; r++){
+      state[c].b[r] = in[r+4*c];
+    }
+  }
+
+  round = 0;
+  add_key(state, w, round); //see sec. 5.1.4
+  
+  for(round = 1; round <= nr; round++){
+    sub_bytes(state); //see sec. 5.1.1
+    shift_rows(state); //see sec. 5.1.2
+    mix_cols(state); //see sec. 5.1.3
+    add_key(state, w, round);
+  }
+
+  sub_bytes(state);
+  shift_rows(state);
+  add_key(state, w, round);
+
+  for(c = 0; c < 4; c++){
+    for(r = 0; r < Nb; r++){
+      out[r+4*c] = state[c].b[r];
+    }
   }
 }
