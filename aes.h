@@ -22,4 +22,4 @@ void add_key(word state[Nb], uint32_t warr[], int round);
 void sub_bytes(word state[Nb]);
 void shift_rows(word state[Nb]);
 void mix_cols(word state[Nb]);
-void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[]);
+void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int nr);

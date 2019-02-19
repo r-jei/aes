@@ -194,7 +194,7 @@ void add_key(word state[Nb], uint32_t warr[], int round)
   for(c = 0; c < Nb; c++){
     keyw = itow(warr[c+round*Nb]);
     for(r = 0; r < WLEN; r++){
-      state[r].b[c] = state[r].b[c] ^ keyw.b[r];
+      state[c].b[r] = state[c].b[r] ^ keyw.b[r];
     }
   }
 }
@@ -215,10 +215,10 @@ void shift_rows(word state[Nb])
   /* row 0 isn't shifted */
   for(r = 1; r < WLEN; r++){
     for(i = 0; i < Nb; i++)
-      temp[i] = state[r].b[i];
+      temp[i] = state[i].b[r];
     
     for(c = 0; c < Nb; c++){
-      state[r].b[c] = temp[(c+r)%Nb];
+      state[c].b[r] = temp[(c+r)%Nb];
     }
   }
 }
@@ -228,21 +228,21 @@ void mix_cols(word state[Nb])
   int c;
   unsigned char s0c, s1c, s2c, s3c;
   for(c = 0; c < Nb; c++){
-    s0c = state[0].b[c];
-    s1c = state[1].b[c];
-    s2c = state[2].b[c];
-    s3c = state[3].b[c];
+    s0c = state[c].b[0];
+    s1c = state[c].b[1];
+    s2c = state[c].b[2];
+    s3c = state[c].b[3];
 
-    state[0].b[c] = ffMultiply(0x02,s0c) ^ ffMultiply(0x03,s1c) ^ s2c ^ s3c;
-    state[1].b[c] = s0c ^ ffMultiply(0x02,s1c) ^ ffMultiply(0x03,s2c) ^ s3c;
-    state[2].b[c] = s0c ^ s1c ^ ffMultiply(0x02,s2c) ^ ffMultiply(0x03,s3c);
-    state[3].b[c] = ffMultiply(0x03,s0c) ^ s1c ^ s2c ^ ffMultiply(0x02,s3c);
+    state[c].b[0] = ffMultiply(0x02,s0c) ^ ffMultiply(0x03,s1c) ^ s2c ^ s3c;
+    state[c].b[1] = s0c ^ ffMultiply(0x02,s1c) ^ ffMultiply(0x03,s2c) ^ s3c;
+    state[c].b[2] = s0c ^ s1c ^ ffMultiply(0x02,s2c) ^ ffMultiply(0x03,s3c);
+    state[c].b[3] = ffMultiply(0x03,s0c) ^ s1c ^ s2c ^ ffMultiply(0x02,s3c);
   }
 }
 
-void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[])
+void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int nr)
 {
-  int r, c, round, nr;
+  int r, c, round;
   word state[Nb];
   /* initialize the state matrix */
   for(c = 0; c < 4; c++){
@@ -254,7 +254,7 @@ void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[])
   round = 0;
   add_key(state, w, round); //see sec. 5.1.4
   
-  for(round = 1; round <= nr; round++){
+  for(round = 1; round < nr; round++){
     sub_bytes(state); //see sec. 5.1.1
     shift_rows(state); //see sec. 5.1.2
     mix_cols(state); //see sec. 5.1.3
