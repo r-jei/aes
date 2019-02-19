@@ -102,6 +102,8 @@ unsigned char InvSbox[16][16] = {
 				   0x0c, 0x7d }
 };
 
+static int inv = 0;
+
 //finite field addition; see FIPS 197, 4.1
 unsigned char ffAdd(unsigned char a, unsigned char b)
 {
@@ -166,6 +168,24 @@ uint32_t wtoi(word w)
     i ^= w.b[it]<<(4*(6-(it*2)));
   }
   return i;
+}
+
+void prints(int round, char* type, word state[Nb])
+{
+  char* msg;
+  int num;
+  if(inv != 0){
+    msg = "round[%2i].i%s    ";
+    num = inv-round;
+  } else {
+    msg = "round[%2i].%s    ";
+    num = round;
+  }
+  printf(msg,num,type);
+  for(int i = 0; i < Nb; i++){
+    printf("%08x",wtoi(state[i]));
+  }
+  printf("\n");
 }
 
 word set_w(word* w, unsigned char val[WLEN]){
@@ -275,14 +295,28 @@ void key_exp(unsigned char key[],
 
 void add_key(word state[Nb], uint32_t warr[], int round)
 {
+  int num;
+  char* msg;
+  if(inv != 0){
+      msg = "round[%2i].i%s    ";
+      num = inv-round;
+  } else {
+    msg = "round[%2i].%s    ";
+    num = round;
+  }
+
   word keyw;
   int c, r;
+  printf(msg,num,"k_sch");
+
   for(c = 0; c < Nb; c++){
     keyw = itow(warr[c+round*Nb]);
+    printf("%08x",warr[c+round*Nb]);
     for(r = 0; r < WLEN; r++){
       state[c].b[r] = state[c].b[r] ^ keyw.b[r];
     }
   }
+  printf("\n");
 }
 
 void sub_bytes(word state[Nb])
@@ -391,46 +425,72 @@ void unload_state(unsigned char out[4*Nb], word state[Nb])
   }
 }
 
-void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int nr)
+void cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int Nk, int verbose)
 {
+  printf("CIPHER (ENCRYPT):\n");
+  int Nr = Nk+6;
   word state[Nb];
   load_state(in, state);
   
   int round = 0;
+  inv = 0;
+  prints(round,"input",state);
   add_key(state, w, round); //see sec. 5.1.4
   
-  for(round = 1; round < nr; round++){
+  for(round = 1; round < Nr; round++){
+    prints(round,"start",state);
     sub_bytes(state); //see sec. 5.1.1
+    prints(round,"s_box",state);
     shift_rows(state); //see sec. 5.1.2
+    prints(round,"s_row",state);
     mix_cols(state); //see sec. 5.1.3
+    prints(round,"m_col",state);
     add_key(state, w, round);
   }
 
+  prints(round,"start",state);
   sub_bytes(state);
+  prints(round,"s_box",state);
   shift_rows(state);
+  prints(round,"s_row",state);
   add_key(state, w, round);
+  prints(round,"output",state);
+  printf("\n");
 
   unload_state(out,state);
 }
 
-void inv_cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int nr)
+void inv_cipher(unsigned char in[4*Nb], unsigned char out[4*Nb], uint32_t w[], int Nk, int verbose)
 {
+  printf("INVERSE CIPHER (DECRYPT):\n");
+  int Nr = Nk+6;
   word state[Nb];
   load_state(in, state);
 
-  int round = nr;
+  int round = Nr;
+  inv = Nr;
+  prints(round,"input",state);
   add_key(state, w, round);
   
-  for(round = nr-1; round >= 1; round--){
+  for(round = Nr-1; round >= 1; round--){
+    prints(round,"start",state);
     inv_shift_rows(state);
+    prints(round,"s_row",state);
     inv_sub_bytes(state);
+    prints(round,"s_box",state);
     add_key(state,w,round);
+    prints(round,"k_add",state);
     inv_mix_cols(state);
   }
 
+  prints(round,"start",state);
   inv_shift_rows(state);
+  prints(round,"s_row",state);
   inv_sub_bytes(state);
+  prints(round,"s_box",state);
   add_key(state,w,round);
+  prints(round,"output",state);
+  printf("\n");
   
   unload_state(out,state);
 }

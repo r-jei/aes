@@ -234,11 +234,20 @@ int cipher128_test(int vflag)
 
   unsigned char key[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+  printf("PLAINTEXT: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",in[i]);
+  printf("\nKEY: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",key[i]);
+  printf("\n\n");
+
+
   uint32_t warr[Nb*(Nr+1)];
   
   key_exp(key, warr, Nk);
-  cipher(in,out,warr,Nr);
-  inv_cipher(out,in,warr,Nr);
+  cipher(in,out,warr,Nk,1);
+  inv_cipher(out,in,warr,Nk,1);
   
   for(int i = 0; i < 16; i++){
     if((out[i] != result[i]) || (in[i] != in_ref[i]))
@@ -265,11 +274,19 @@ int cipher192_test(int vflag)
   unsigned char key[24] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 			    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 			    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 };
+    printf("PLAINTEXT: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",in[i]);
+  printf("\nKEY: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",key[i]);
+  printf("\n\n");
+
   uint32_t warr[Nb*(Nr+1)];
   
   key_exp(key, warr, Nk);
-  cipher(in,out,warr,Nr);
-  inv_cipher(out,in,warr,Nr);
+  cipher(in,out,warr,Nk,1);
+  inv_cipher(out,in,warr,Nk,1);
   
   for(int i = 0; i < 16; i++){
     if((out[i] != result[i]) || (in[i] != in_ref[i]))
@@ -296,12 +313,19 @@ int cipher256_test(int vflag)
 			    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 			    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
 			    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f };
+  printf("PLAINTEXT: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",in[i]);
+  printf("\nKEY: ");
+  for(int i = 0; i < 16; i++)
+    printf("%02x",key[i]);
+  printf("\n\n");
   
   uint32_t warr[Nb*(Nr+1)];
   key_exp(key, warr, Nk);
   
-  cipher(in,out,warr,Nr);
-  inv_cipher(out,in,warr,Nr);
+  cipher(in,out,warr,Nk,1);
+  inv_cipher(out,in,warr,Nk,1);
 
   for(int i = 0; i < 16; i++){
     if((out[i] != result[i]) || (in[i] != in_ref[i]))
@@ -315,21 +339,13 @@ int main(int argc, char** argv)
   int vflag;
   if(argc > 1)
     vflag = strcmp(argv[1],"-v")==0;
-  printf("-------\n");
-  printf("'1' is a pass, '0' is a failure\n");
-  printf("-------\n");
-  /*printf("ffAdd_test: %d\n-------\n", ffAdd_test(vflag));
-  printf("xtime_test: %d\n-------\n", xtime_test(vflag));
-  printf("ffMultiply_test: %d\n-------\n", ffMultiply_test(vflag));
-  printf("itow_test: %d\n-------\n",   itow_test(vflag));
-  printf("wtoi_test: %d\n-------\n",   wtoi_test(vflag));
-  printf("sub_word_test: %d\n-------\n",   sw_test(vflag));
-  printf("key_exp_test: %d\n-------\n",   key_exp_test(vflag));
-  printf("rot_w_test: %d\n-------\n",   rot_w_test(vflag));
-  cipher_test(vflag);*/
-  printf("cipher128_test: %d\n-------\n", cipher128_test(vflag));
-  printf("cipher192_test: %d\n-------\n", cipher192_test(vflag));
-  printf("cipher256_test: %d\n-------\n", cipher256_test(vflag));
+
+  printf(AES128_MSG);
+  cipher128_test(vflag);
+  printf(AES192_MSG);
+  cipher192_test(vflag);
+  printf(AES256_MSG);
+  cipher256_test(vflag);
   
   return 0;
 }
