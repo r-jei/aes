@@ -1,1 +1,10 @@
-An implementation of the Advanced Encryption Standard (AES). Do not use for production!!!
+My very own implementation of the Advanced Encryption Standard (AES). (Do not use for production! It's vulnerable to side-channel attacks)
+
+To test this implementation:
+
+$ make
+$ ./tests
+
+By default, the tests for 128, 192 and 256 bit encryption/decryption are run.
+Uncomment other tests in tests.c and recompile to use the other tests.
+Pass a '-v' flag to enable verbose output.

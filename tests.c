@@ -316,6 +316,8 @@ int main(int argc, char** argv)
   if(argc > 1)
     vflag = strcmp(argv[1],"-v")==0;
   printf("-------\n");
+  printf("'1' is a pass, '0' is a failure\n");
+  printf("-------\n");
   /*printf("ffAdd_test: %d\n-------\n", ffAdd_test(vflag));
   printf("xtime_test: %d\n-------\n", xtime_test(vflag));
   printf("ffMultiply_test: %d\n-------\n", ffMultiply_test(vflag));
