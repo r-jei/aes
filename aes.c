@@ -232,6 +232,7 @@ word rcon(int num)
  * @key: an array of Nk 32-bit words. 
  * @warr: The key schedule to be generated. Initial Nb words, and Nr rounds requiring Nb words of key data.
  * @Nk: Number of 32-bit words comprising the cipher key
+ * todo: clean this up a bit!
  */
 void key_exp(unsigned char key[],
 		       uint32_t warr[],

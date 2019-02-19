@@ -16,6 +16,8 @@ uint32_t expanded[44] = { 0x2b7e1516, 0x28aed2a6, 0xabf71588, 0x09cf4f3c,
 			  0xac7766f3, 0x19fadc21, 0x28d12941, 0x575c006e,
 			  0xd014f9a8, 0xc9ee2589, 0xe13f0cc8, 0xb6630ca6 };
 
+unsigned char in_ref[16]  = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+			  0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
 
 
 /*
@@ -239,7 +241,7 @@ int cipher128_test(int vflag)
   inv_cipher(out,in,warr,Nr);
   
   for(int i = 0; i < 16; i++){
-    if(out[i] != result[i])
+    if((out[i] != result[i]) || (in[i] != in_ref[i]))
       return 0;
   }
   return 1;
@@ -270,7 +272,7 @@ int cipher192_test(int vflag)
   inv_cipher(out,in,warr,Nr);
   
   for(int i = 0; i < 16; i++){
-    if(out[i] != result[i])
+    if((out[i] != result[i]) || (in[i] != in_ref[i]))
       return 0;
   }
   return 1;
@@ -290,7 +292,10 @@ int cipher256_test(int vflag)
   unsigned char result[16] = { 0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
 			      0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89};
 
-  unsigned char key[32] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f };
+  unsigned char key[32] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+			    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+			    0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f };
   
   uint32_t warr[Nb*(Nr+1)];
   key_exp(key, warr, Nk);
@@ -299,7 +304,7 @@ int cipher256_test(int vflag)
   inv_cipher(out,in,warr,Nr);
 
   for(int i = 0; i < 16; i++){
-    if(out[i] != result[i])
+    if((out[i] != result[i]) || (in[i] != in_ref[i]))
       return 0;
   }
   return 1;
@@ -310,7 +315,8 @@ int main(int argc, char** argv)
   int vflag;
   if(argc > 1)
     vflag = strcmp(argv[1],"-v")==0;
-  printf("ffAdd_test: %d\n-------\n", ffAdd_test(vflag));
+  printf("-------\n");
+  /*printf("ffAdd_test: %d\n-------\n", ffAdd_test(vflag));
   printf("xtime_test: %d\n-------\n", xtime_test(vflag));
   printf("ffMultiply_test: %d\n-------\n", ffMultiply_test(vflag));
   printf("itow_test: %d\n-------\n",   itow_test(vflag));
@@ -318,7 +324,7 @@ int main(int argc, char** argv)
   printf("sub_word_test: %d\n-------\n",   sw_test(vflag));
   printf("key_exp_test: %d\n-------\n",   key_exp_test(vflag));
   printf("rot_w_test: %d\n-------\n",   rot_w_test(vflag));
-  cipher_test(vflag);
+  cipher_test(vflag);*/
   printf("cipher128_test: %d\n-------\n", cipher128_test(vflag));
   printf("cipher192_test: %d\n-------\n", cipher192_test(vflag));
   printf("cipher256_test: %d\n-------\n", cipher256_test(vflag));
