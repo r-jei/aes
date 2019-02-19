@@ -189,9 +189,13 @@ void key_exp(unsigned char key[],
 
 void add_key(word state[Nb], uint32_t warr[], int round)
 {
-  int i;
-  for(i = round*Nb; i < round*(Nb+1); i++){
-    state[i] = xor_w(state[i], itow(warr[round*Nb+i]));
+  word keyw;
+  int c, r;
+  for(c = 0; c < Nb; c++){
+    keyw = itow(warr[c+round*Nb]);
+    for(r = 0; r < WLEN; r++){
+      state[r].b[c] = state[r].b[c] ^ keyw.b[r];
+    }
   }
 }
 
@@ -221,7 +225,7 @@ void shift_rows(word state[Nb])
 
 void mix_cols(word state[Nb])
 {
-  int r, c;
+  int c;
   unsigned char s0c, s1c, s2c, s3c;
   for(c = 0; c < Nb; c++){
     s0c = state[0].b[c];

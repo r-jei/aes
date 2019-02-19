@@ -201,53 +201,18 @@ int rot_w_test(int vflag)
   return 1;
 }
 
-int sub_bytes_test(word state[Nb])
+int compare(word state[Nb], uint32_t ref[])
 {
-  sub_bytes(state);
   for(int i = 0; i < Nb; i++){
-    if(wtoi(state[i]) != sub[i]){
+    if(wtoi(state[i]) != ref[i])
       return 0;
-    }
   }
   return 1;
 }
 
-int shift_rows_test(word state[Nb])
-{
-  shift_rows(state);
-  for(int i = 0; i < Nb; i++){
-    if(wtoi(state[i]) != shift[i]){
-      return 0;
-    }
-  }
-  return 1;
-}
-
-int mix_cols_test(word state[Nb])
-{
-  mix_cols(state);
-  for(int i = 0; i < Nb; i++){
-    if(wtoi(state[i]) != mix[i]){
-      return 0;
-    }
-  }
-  return 1;  
-}
-int add_key_test(word state[Nb], uint32_t w[], int Nk)
-{
-  add_key(state, w, Nk);
-  for(int i = 0; i < Nb; i++){
-    if(wtoi(state[i]) != rnd[i]){
-      return 0;
-    }
-  }
-  return 1;  
-}
-
-int cipher_test(int vflag)
+void cipher_test(int vflag)
 {
   word state[Nb];
-  int i, sub_bool, shift_bool, mix_bool, rnd_bool;
 
   /* initialize state */
   state[0] = itow(0x19a09ae9);
@@ -255,17 +220,17 @@ int cipher_test(int vflag)
   state[2] = itow(0xe3e28d48);
   state[3] = itow(0xbe2b2a08);
 
-  sub_bool = sub_bytes_test(state);
-  printf("sub_bytes_test: %d\n-------\n", sub_bool);
+  sub_bytes(state);
+  printf("sub_bytes_test: %d\n-------\n", compare(state,sub));
 
-  shift_bool = shift_rows_test(state);
-  printf("shift_rows_test: %d\n-------\n", shift_bool);
+  shift_rows(state);
+  printf("shift_rows_test: %d\n-------\n", compare(state,shift));
 
-  mix_bool = mix_cols_test(state);
-  printf("mix_cols_test: %d\n-------\n", mix_bool);
+  mix_cols(state);
+  printf("mix_cols_test: %d\n-------\n", compare(state,mix));
 
-  rnd_bool = add_key_test(state, expanded, 4);
-  printf("add_key_test: %d\n-------\n", rnd_bool);
+  add_key(state, expanded, 1);
+  printf("add_key_test: %d\n-------\n", compare(state,rnd));
   
 }
 
